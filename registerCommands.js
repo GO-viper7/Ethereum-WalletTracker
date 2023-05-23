@@ -46,8 +46,8 @@ const commands = [
 
   },
   {
-    "name" : 'latest',
-    "description" : "Displays latest transaction",
+    "name" : 'wallets',
+    "description" : "Displays all tracked wallets",
     "options" : []
   }
 ]

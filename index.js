@@ -288,39 +288,33 @@ client.on("interactionCreate", async (interaction) => {
     let userId = interaction.user.id;
     await walletSchema.deleteOne({ userId: userId, wallet: wallet.value, channelName: channel.value });
     await interaction.reply(`Untracked wallet **${wallet.value}** from **${channel.value}**`);
-  }else if (interaction.commandName === "latest") {
-    const wallets = await walletSchema.findOne({
-      channelId: interaction.channelId,
-    });
+  }else if (interaction.commandName === "wallets") {
+    const wallets = await walletSchema.find({channelId: interaction.channel.id})
     if (!wallets) return interaction.reply("No wallet found in this channel!");
-    if (wallets.wallet === "0X") return interation.reply('Wait for wallet to get synchronized!')
-    let config = {
-      method: "get",
-      url: `https://api.etherscan.io/api?module=account&action=txlist&address=${wallets.wallet}&startblock=0&endblock=99999999&sort=desc&apikey=${process.env.apiKey}`,
-    };
-    await interaction.deferReply("Fetching latest transaction...");
-    axios(config)
-      .then((res) => JSON.parse(JSON.stringify(res.data.result)))
-      .then(async (res) => {
-        if(res[0].hash === undefined) return interaction.editReply("No transactions found")
-        setTimeout(async () => {
-          await interaction.editReply({
-            embeds: [
-              {
-                title: "Latest Transaction",
-                thumbnail: {
-                  url: "https://etherscan.io/images/brandassets/etherscan-logo-circle.jpg",
-                },
-                description: `**From:** ${res[0].from}\n**To:** ${res[0].to}\n**Value:** ${res[0].value} ETH\n**Txn Hash:** ${res[0].hash}`,
-                color: 0x243c58,
-                footer: {
-                  text: "Developed by @GoViper",
-                },
-              },
-            ],         
-          });
-        }, 3000);
+    let wall = [];
+    wallets.forEach((wallet) => {
+      wall.push({
+        name: wallet.label,
+        value: wallet.wallet,
+        inline: true,
+      });
     });
+    await interaction.reply({
+      embeds: [
+        {
+          title: "Tracket wallets in this channel",
+          thumbnail: {
+            url: "https://etherscan.io/images/brandassets/etherscan-logo-circle.jpg",
+          },
+          fields: wall,
+          color: 0x243c58,
+          footer: {
+            text: "Developed by @GoViper",
+          },
+        },
+      ],         
+    });
+
   }
 });
 
